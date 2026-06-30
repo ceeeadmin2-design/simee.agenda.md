@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda electronică</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f5ff;
+            color: #333;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* BARA DE SUS – #3099c9 */
+        .blue-light-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background-color: #3099c9;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding-left: 120px;
+        }
+
+        .blue-light-top .logo {
+            height: 30px;
+            max-height: 30px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* BARA LATERALĂ PRINCIPALĂ – #1d5a77 */
+        .blue-dark-left {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            bottom: 0;
+            width: 100px;
+            background-color: #1d5a77;
+            z-index: 99;
+        }
+
+        /* BANDA PENTRU NUME – #247499 */
+        .name-corner {
+            position: fixed;
+            top: 55px;
+            left: 0;
+            width: 100px;
+            height: 40px;
+            background-color: #247499;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2px;
+        }
+
+        .student-name {
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            letter-spacing: 0;
+            white-space: nowrap;
+            line-height: 1.2;
+            max-width: 96px;
+            overflow: visible;
+        }
+
+        .page-wrapper {
+            margin-left: 100px;
+            padding-top: 40px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 25px;
+        }
+
+        /* BADGE-URI */
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            width: 150px;
+            height: 180px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px 10px;
+            border: none;
+            background: #399BEA;
+        }
+
+        .badge:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .badge-image {
+            height: 80px;
+            width: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .badge-text {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .badge.active {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            outline: 3px solid white;
+            outline-offset: -3px;
+        }
+
+        .content-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            min-height: 500px;
+        }
+
+        /* ===== REUȘITĂ ===== */
+        .semester-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e6f2ff;
+            padding-bottom: 10px;
+        }
+
+        .semester-tab {
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            background: #f0f5ff;
+            color: #1a365d;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .semester-tab:hover {
+            background: #dce8f5;
+        }
+
+        .semester-tab.active {
+            background: #2d5aa0;
+            color: white;
+        }
+
+        .semester-title {
+            background-color: #e6f2ff;
+            color: #1a365d;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            border-left: 5px solid #2d5aa0;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .grades-table th {
+            background-color: #2d5aa0;
+            color: white;
+            text-align: left;
+            padding: 12px 15px;
+            font-weight: 600;
+            border: 1px solid #1e3c72;
+            font-size: 14px;
+        }
+
+        .grades-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        .grades-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .grades-table tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .subject-name {
+            color: #399BEA;
+            font-weight: bold;
+        }
+
+        .grade-list {
+            color: #1a365d;
+            font-weight: bold;
+        }
+
+        /* ===== ABSENȚE – fără header, fără număr în lună, fără culori ===== */
+        .absente-wrapper {
+            padding: 5px 0;
+        }
+
+        .month-accordion {
+            margin-bottom: 6px;
+            border: 1px solid #e6f2ff;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .month-accordion .month-header {
+            background: #f0f5ff;
+            padding: 12px 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: #1e3c72;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .month-accordion .month-header:hover {
+            background: #dce8f5;
+        }
+
+        .month-accordion .month-header .arrow {
+            font-size: 18px;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+
+        .month-accordion .month-header .arrow.open {
+            transform: rotate(90deg);
+        }
+
+        .month-accordion .month-body {
+            display: none;
+            padding: 10px 18px 18px 18px;
+            background: #fafbfc;
+            border-top: 1px solid #e6f2ff;
+        }
+
+        .month-accordion .month-body.open {
+            display: block;
+        }
+
+        .month-accordion .month-body .absence-entry {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+            padding: 6px 0;
+            font-size: 14px;
+            border-bottom: 1px dashed #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .month-accordion .month-body .absence-entry:last-child {
+            border-bottom: none;
+        }
+
+        .month-accordion .month-body .absence-date {
+            font-weight: 600;
+            color: #1a365d;
+            min-width: 110px;
+        }
+
+        .month-accordion .month-body .absence-time {
+            color: #2d5aa0;
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .month-accordion .month-body .absence-subject {
+            color: #399BEA;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .month-accordion .month-body .absence-status {
+            font-weight: 600;
+            color: #1a365d;
+            white-space: nowrap;
+        }
+
+        /* ===== 404 ===== */
+        .error404-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .error404-container .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            color: #2d5aa0;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 4px 4px 0 #e6f2ff;
+        }
+
+        .error404-container .error-message {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .error404-container .error-sub {
+            font-size: 18px;
+            color: #666;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .error404-container .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .badges-container { gap: 10px; }
+            .badge { width: 130px; height: 160px; }
+            .badge-image { height: 70px; width: 70px; }
+            .badge-text { font-size: 18px; }
+            .content-area { padding: 15px; }
+            .grades-table th, .grades-table td { padding: 10px; font-size: 13px; }
+            .blue-light-top { height: 35px; padding-left: 110px; background-color: #3099c9; }
+            .blue-light-top .logo { height: 26px; }
+            .blue-dark-left { width: 100px; top: 35px; background-color: #1d5a77; }
+            .name-corner { top: 50px; width: 100px; height: 36px; background-color: #247499; padding: 0 2px; }
+            .student-name { font-size: 11px; max-width: 96px; }
+            .page-wrapper { margin-left: 100px; padding-top: 35px; }
+            .month-accordion .month-header { font-size: 16px; padding: 10px 14px; }
+            .month-accordion .month-body .absence-entry { gap: 12px; font-size: 13px; }
+            .month-accordion .month-body .absence-date { min-width: 90px; }
+            .month-accordion .month-body .absence-time { min-width: 80px; }
+            .semester-tabs { flex-wrap: wrap; }
+            .semester-tab { padding: 8px 16px; font-size: 13px; }
+            .error404-container .error-code { font-size: 80px; }
+            .error404-container .error-message { font-size: 24px; }
+        }
+
+        @media (max-width: 480px) {
+            .badge { width: 110px; height: 140px; }
+            .badge-image { height: 60px; width: 60px; margin-bottom: 10px; }
+            .badge-text { font-size: 16px; }
+            .blue-light-top { height: 30px; padding-left: 100px; background-color: #3099c9; }
+            .blue-light-top .logo { height: 22px; }
+            .blue-dark-left { width: 100px; top: 30px; background-color: #1d5a77; }
+            .name-corner { top: 45px; width: 100px; height: 32px; background-color: #247499; padding: 0 2px; }
+            .student-name { font-size: 10px; max-width: 96px; }
+            .page-wrapper { margin-left: 100px; padding-top: 30px; }
+            .month-accordion .month-header { font-size: 14px; padding: 8px 12px; }
+            .month-accordion .month-body { padding: 8px 12px; }
+            .month-accordion .month-body .absence-entry { flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; }
+            .month-accordion .month-body .absence-date { min-width: auto; }
+            .month-accordion .month-body .absence-time { min-width: auto; }
+            .grades-table th, .grades-table td { padding: 8px; font-size: 12px; }
+            .semester-tab { padding: 6px 12px; font-size: 12px; }
+            .error404-container .error-code { font-size: 60px; }
+            .error404-container .error-message { font-size: 20px; }
+        }
+
+        @media (max-width: 360px) {
+            .blue-dark-left { width: 95px; background-color: #1d5a77; }
+            .name-corner { width: 95px; height: 30px; background-color: #247499; padding: 0 2px; }
+            .student-name { font-size: 10px; max-width: 91px; }
+            .page-wrapper { margin-left: 95px; }
+            .badge { width: 95px; height: 125px; padding: 10px 5px; }
+            .badge-image { height: 50px; width: 50px; margin-bottom: 8px; }
+            .badge-text { font-size: 14px; }
+            .blue-light-top { padding-left: 90px; background-color: #3099c9; }
+            .blue-light-top .logo { height: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================================================================
+    ***************  AICI PUI IMAGINEA  *****************
+    Înlocuiește "agenda2.jpg" cu numele fișierului tău.
+    Dacă imaginea e în același folder, scrie doar numele.
+    De exemplu: src="logo.png"  sau  src="imagini/sigla.jpg"
+    ================================================================ -->
+    <div class="blue-light-top">
+        <img class="logo" src="agenda2.jpg" alt="Logo Agenda Electronică">
+    </div>
+
+    <!-- BARA LATERALĂ PRINCIPALĂ – #1d5a77 -->
+    <div class="blue-dark-left"></div>
+
+    <!-- BANDA PENTRU NUME – #247499 -->
+    <div class="name-corner">
+        <div class="student-name">STAN EDUARD</div>
+    </div>
+
+    <!-- CONTAINER PAGINĂ -->
+    <div class="page-wrapper">
+        <div class="main-container">
+
+            <!-- BADGE-URI -->
+            <div class="badges-container">
+                <div class="badge" id="badge-agenda" style="background: #399BEA;">
+                    <img class="badge-image" src="https://cdn-icons-png.flaticon.com/512/3652/3652191.png" alt="Agendă">
+                    <div class="badge-text">Agendă</div>
+                </div>
+
+                <div class="badge" id="badge-dosar" style="background: #ffc34d;">
+                    <img class="badge-image" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Dosar">
+                    <div class="badge-text">Dosar</div>
+                </div>
+
+                <div class="badge" id="badge-absente" style="background: #ff704d;">
+                    <img class="badge-image" src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" alt="Absențe">
+                    <div class="badge-text">Absențe</div>
+                </div>
+
+                <div class="badge active" id="badge-reusita" style="background: #6eaaa0;">
+                    <img class="badge-image" src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Reușita">
+                    <div class="badge-text">Reușita</div>
+                </div>
+            </div>
+
+            <!-- ZONA DE CONȚINUT -->
+            <div class="content-area" id="content-area">
+
+                <!-- ==========================================================
+                REUȘITĂ
+                ========================================================== -->
+                <div id="reusita-content">
+                    <div class="semester-tabs">
+                        <button class="semester-tab active" data-semester="1">Semestrul I</button>
+                        <button class="semester-tab" data-semester="2">Semestrul II</button>
+                    </div>
+
+                    <div id="semestru1-content">
+                        <div class="semester-title">Semestrul I</div>
+                        <table class="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th>Lista notelor</th>
+                                    <th>Media semestrului</th>
+                                    <th>Media anuală</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="subject-name">Fizica</td><td class="grade-list">8, 6, 7, 7</td><td>7</td><td>7,0</td></tr>
+                                <tr><td class="subject-name">Istoria universală</td><td class="grade-list">7, 9, 8</td><td>8</td><td>7,5</td></tr>
+                                <tr><td class="subject-name">Limba şi literatura română</td><td class="grade-list">7, 8, 8, 7</td><td>7,5</td><td>7,38</td></tr>
+                                <tr><td class="subject-name">Matematică</td><td class="grade-list">8, 7, 9, 9, 8</td><td>8,2</td><td>8,02</td></tr>
+                                <tr><td class="subject-name">Geografia</td><td class="grade-list">7, 8, 9, 7</td><td>7,75</td><td>7,63</td></tr>
+                                <tr><td class="subject-name">Informatica</td><td class="grade-list">8, 9, 8, 9</td><td>8,5</td><td>8,05</td></tr>
+                                <tr><td class="subject-name">Programarea Procedurală</td><td class="grade-list">Admis, Admis, Admis, Admis, 8, 8, 7, 8</td><td>7,75</td><td>7,75</td></tr>
+                                <tr><td class="subject-name">Limba engleză</td><td class="grade-list">9, 8, 8, 8</td><td>8,25</td><td>8,5</td></tr>
+                                <tr><td class="subject-name">Asistenţa programarea WEB</td><td class="grade-list">8, 9, 8, 9, 9, 8, 8</td><td>8,5</td><td>8,5</td></tr>
+                                <tr><td class="subject-name">Arhitectura Reţelelor de Calculatoare</td><td class="grade-list">Admis, Admis, Admis, Admis, Admis, 7, 7, 7, 7</td><td>7</td><td>7</td></tr>
+                                <tr><td class="subject-name">Educaţia pentru societate</td><td class="grade-list">7, 8, 9</td><td>8</td><td>7,88</td></tr>
+                                <tr><td class="subject-name">DMSV</td><td class="grade-list">8, 8, 8, 8</td><td>8</td><td>8</td></tr>
+                                <tr><td class="subject-name">Educaţie Fizică</td><td class="grade-list">B, B, B</td><td>B</td><td>B</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="semestru2-content" style="display: none;">
+                        <div class="semester-title">Semestrul II</div>
+                        <table class="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th>Lista notelor</th>
+                                    <th>Media semestrului</th>
+                                    <th>Media anuală</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="subject-name">Fizica</td><td class="grade-list">7, 8, 6, 7, 7</td><td>7,0</td><td>7,0</td></tr>
+                                <tr><td class="subject-name">Istoria universală</td><td class="grade-list">8, 6, 7, 7</td><td>7,0</td><td>7,5</td></tr>
+                                <tr><td class="subject-name">Limba şi literatura română</td><td class="grade-list">6, 8, 7, 8</td><td>7,25</td><td>7,38</td></tr>
+                                <tr><td class="subject-name">Matematică</td><td class="grade-list">8, 7, 7, 8, 9, 8</td><td>7,83</td><td>8,02</td></tr>
+                                <tr><td class="subject-name">Geografia</td><td class="grade-list">8, 7, 8, 7</td><td>7,5</td><td>7,63</td></tr>
+                                <tr><td class="subject-name">Informatica</td><td class="grade-list">8, 6, 8, 8, 8</td><td>7,6</td><td>8,05</td></tr>
+                                <tr><td class="subject-name">Config. Retelelor de Calculatoare</td><td class="grade-list">Admis, Admis, Admis, Admis, Admis, 7, 7, 7, 7</td><td>7,0</td><td>7,0</td></tr>
+                                <tr><td class="subject-name">Limba engleză</td><td class="grade-list">8, 9, 8, 10</td><td>8,75</td><td>8,5</td></tr>
+                                <tr><td class="subject-name">Photoshop</td><td class="grade-list">Admis, Admis, Admis, 8, 8, 8, 8</td><td>8,0</td><td>8,0</td></tr>
+                                <tr><td class="subject-name">Practica RC</td><td class="grade-list">Admis, Admis, Admis, Admis, Admis, Admis, Admis, 8, 8, 8, 5, 8, 9</td><td>7,67</td><td>7,67</td></tr>
+                                <tr><td class="subject-name">Educaţia pentru societate</td><td class="grade-list">8, 8, 8, 7</td><td>7,75</td><td>7,88</td></tr>
+                                <tr><td class="subject-name">ASDN</td><td class="grade-list">Admis, Admis, Admis, Admis, Admis, Admis, Admis, 7, 7, 6, 8, 8, 8</td><td>7,33</td><td>7,33</td></tr>
+                                <tr><td class="subject-name">Educaţie Fizică</td><td class="grade-list">B, B, S, FB, B</td><td>B</td><td>B</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ==========================================================
+                404 PAGE
+                ========================================================== -->
+                <div id="error404-content" style="display: none;">
+                    <div class="error404-container">
+                        <div class="error-icon">🔍</div>
+                        <div class="error-code">404</div>
+                        <div class="error-message">Pagina nu a fost găsită</div>
+                        <div class="error-sub">
+                            Ne pare rău, dar secțiunea pe care încercați să o accesați nu este disponibilă momentan.<br>
+                            Vă rugăm să reveniți mai târziu.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==========================================================
+                ABSENȚE – fără header, fără număr în lună, fără culori
+                ========================================================== -->
+                <div id="absente-content" style="display: none;">
+                    <div class="absente-wrapper">
+                        <div id="absenteAccordion"></div>
+                    </div>
+                </div>
+
+            </div><!-- /content-area -->
+
+            <!-- FOOTER -->
+            <div class="footer">
+            </div>
+
+        </div><!-- /main-container -->
+    </div><!-- /page-wrapper -->
+
+
+    <script>
+        // ================================================================
+        //  DATE ABSENȚE
+        // ================================================================
+        const absenteData = [
+            { month: 'Septembrie', absences: [
+                { date: '21.09.2025', time: '08:00 – 9:30', subject: 'Matematică', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Octombrie', absences: [
+                { date: '08.10.2025', time: '13:20 – 14:50', subject: 'Limba Engleză', status: 'Absent Nemotivat' },
+                { date: '15.10.2025', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '22.10.2025', time: '15:00 – 16:30', subject: 'Educatia Fizica', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Noiembrie', absences: [
+                { date: '05.11.2025', time: '09:40 – 11:10', subject: 'Matematică', status: 'Absent Nemotivat' },
+                { date: '12.11.2025', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '19.11.2025', time: '08:15 – 09:00', subject: 'Limba Engleză', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Decembrie', absences: [
+                { date: '03.12.2025', time: '13:10 – 14:50', subject: 'Matematica', status: 'Absent Nemotivat' },
+                { date: '05.12.2025', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '12.12.2025', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '19.12.2025', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Ianuarie', absences: [
+                { date: '19.01.2026', time: '11:20 – 12:50', subject: 'Matematică', status: 'Absent Nemotivat' },
+                { date: '21.01.2026', time: '13:20 – 14:50', subject: 'Limba engleză', status: 'Absent Nemotivat' },
+                { date: '23.01.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '28.01.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '30.01.2026', time: '13:20 – 14:50', subject: 'Fizica', status: 'Absent Nemotivat' },
+                { date: '30.01.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Februarie', absences: [
+                { date: '04.02.2026', time: '13:20 – 14:50', subject: 'Limba engleză', status: 'Absent Nemotivat' },
+                { date: '11.02.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+                { date: '18.02.2026', time: '08:00 – 09:30', subject: 'Matematică', status: 'Absent Nemotivat' },
+                { date: '25.02.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' },
+            ]},
+            { month: 'Martie', absences: [
+                { date: '06.03.2026', time: '15:00 – 16:30', subject: 'Educația Fizică', status: 'Absent Nemotivat' }
+            ]},
+            { month: 'Aprilie', absences: [
+                { date: '21.04.2026', time: '13:20 – 18:00', subject: 'Practica RC', status: 'Absent Nemotivat' },
+                { date: '23.04.2026', time: '13:20 – 18:00', subject: 'Practica RC', status: 'Absent Motivat' },
+                { date: '27.04.2026', time: '13:20 – 18:00', subject: 'Practica RC', status: 'Absent Motivat' },
+                { date: '29.04.2026', time: '13:20 – 18:00', subject: 'Practica RC', status: 'Absent Motivat' },
+            ]},
+            { month: 'Mai', absences: [] }
+        ];
+
+        // ================================================================
+        //  RENDER ACORDEON – acum lasă complet gol când nu sunt absențe
+        // ================================================================
+        function renderAbsenteAccordion() {
+            const container = document.getElementById('absenteAccordion');
+            let html = '';
+
+            absenteData.forEach((monthData, index) => {
+                const isFirst = index === 0;
+
+                html += `<div class="month-accordion">`;
+                html += `
+                    <div class="month-header" data-target="body-${index}">
+                        <span>${monthData.month}</span>
+                        <span class="arrow ${isFirst ? 'open' : ''}">▶</span>
+                    </div>
+                `;
+                html += `<div class="month-body ${isFirst ? 'open' : ''}" id="body-${index}">`;
+
+                // Dacă nu sunt absențe, nu adăugăm nimic (nici măcar mesaj)
+                if (monthData.absences.length > 0) {
+                    monthData.absences.forEach(entry => {
+                        html += `
+                            <div class="absence-entry">
+                                <span class="absence-date">${entry.date}</span>
+                                <span class="absence-time">${entry.time}</span>
+                                <span class="absence-subject">${entry.subject}</span>
+                                <span class="absence-status">${entry.status}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+
+            document.querySelectorAll('.month-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const body = document.getElementById(targetId);
+                    const arrow = this.querySelector('.arrow');
+                    if (body) {
+                        body.classList.toggle('open');
+                        arrow.classList.toggle('open');
+                    }
+                });
+            });
+        }
+
+        // ================================================================
+        //  BADGE-URI ȘI NAVIGARE
+        // ================================================================
+        const badgeAgenda = document.getElementById('badge-agenda');
+        const badgeDosar = document.getElementById('badge-dosar');
+        const badgeAbsente = document.getElementById('badge-absente');
+        const badgeReusita = document.getElementById('badge-reusita');
+
+        const reusitaContent = document.getElementById('reusita-content');
+        const error404Content = document.getElementById('error404-content');
+        const absenteContent = document.getElementById('absente-content');
+
+        function resetBadges() {
+            document.querySelectorAll('.badge').forEach(b => b.classList.remove('active'));
+        }
+
+        function hideAllSections() {
+            reusitaContent.style.display = 'none';
+            error404Content.style.display = 'none';
+            absenteContent.style.display = 'none';
+        }
+
+        badgeAgenda.addEventListener('click', function() {
+            hideAllSections();
+            error404Content.style.display = 'block';
+            resetBadges();
+            this.classList.add('active');
+        });
+
+        badgeDosar.addEventListener('click', function() {
+            hideAllSections();
+            error404Content.style.display = 'block';
+            resetBadges();
+            this.classList.add('active');
+        });
+
+        badgeAbsente.addEventListener('click', function() {
+            hideAllSections();
+            absenteContent.style.display = 'block';
+            resetBadges();
+            this.classList.add('active');
+            if (!document.getElementById('absenteAccordion').innerHTML) {
+                renderAbsenteAccordion();
+            }
+        });
+
+        badgeReusita.addEventListener('click', function() {
+            hideAllSections();
+            reusitaContent.style.display = 'block';
+            resetBadges();
+            this.classList.add('active');
+        });
+
+        // TABS Semestru I / II
+        document.querySelectorAll('.semester-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.semester-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const sem = this.dataset.semester;
+                document.getElementById('semestru1-content').style.display = sem === '1' ? 'block' : 'none';
+                document.getElementById('semestru2-content').style.display = sem === '2' ? 'block' : 'none';
+            });
+        });
+
+        // ================================================================
+        //  LA ÎNCĂRCARE
+        // ================================================================
+        window.onload = function() {
+            hideAllSections();
+            reusitaContent.style.display = 'block';
+            badgeReusita.classList.add('active');
+            document.getElementById('semestru1-content').style.display = 'block';
+            document.getElementById('semestru2-content').style.display = 'none';
+
+            renderAbsenteAccordion();
+        };
+    </script>
+
+</body>
+</html>
